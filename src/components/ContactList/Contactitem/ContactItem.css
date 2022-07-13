@@ -10,3 +10,7 @@
 .friends {
   background: #f2a654;
 }
+.edit {
+  cursor: pointer;
+  color: #46be8a;
+}
