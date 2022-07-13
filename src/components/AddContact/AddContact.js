@@ -1,13 +1,22 @@
+import { connect } from "react-redux";
+import { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import SideBar from "../Sidebar/Sidebar";
 import { Navigate } from "react-router-dom";
 import "./AddContact.css";
-import { useState } from "react";
-import Header from "../Header/Header";
+// Import actions
+import { UpdateContactList } from "../../Actions/ContactListActions";
 let gender; let avatar;
-const AddContact = ({List, onAddNewContact }) => {
- const [isRedirect, setRedirect] = useState(false); 
+const AddContact = ({ UpdateContactList, PeopleList,URL }) => {
+
+  const CreateUrl= ()=>
+{
+return `https://api.randomuser.me/portraits/${gender}/${avatar}.jpg`;
+}
+const [Url, SetUrl] = useState(CreateUrl); 
  
+  const [isRedirect, setRedirect] = useState(false);
+
   const onCreateNewContact = (e) => {
     e.preventDefault();
     const name = e.target[0].value;
@@ -29,23 +38,29 @@ const AddContact = ({List, onAddNewContact }) => {
       favorite,
     };
 
-    onAddNewContact(newContact);
+    const tmpList = PeopleList.slice();
+    tmpList.unshift(newContact);
+    updateContact(tmpList);
+    UpdateContactList(tmpList);
     setRedirect(true);
-    // ;
   };
 
-const CreateUrl= ()=>
-{
-return `https://api.randomuser.me/portraits/${gender}/${avatar}.jpg`;
-}
-const [Url, SetUrl] = useState(CreateUrl); 
+  const updateContact = (data) => {
+    fetch(URL, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+  };
   return (
     <>
     
     {isRedirect === true? <Navigate to="/" replace={true} />:""}
     <div className="container bootstrap snippets bootdeys bootdey">
       <div className="row decor-default">
-        <SideBar List ={List}/>
+        <SideBar />
         <div className="col-lg-9 col-md-8 col-sm-12">
           <div className="contacts-list">
             <h5 className="title">Add new contact</h5>
@@ -165,4 +180,14 @@ const [Url, SetUrl] = useState(CreateUrl);
     </>
   );
 };
-export default AddContact;
+
+const mapStateToProps = ({ ContactListReducer }) => {
+  const { PeopleList ,URL} = ContactListReducer;
+  return { PeopleList ,URL};
+};
+
+const mapDispatchToProps = {
+  UpdateContactList,
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(AddContact);
